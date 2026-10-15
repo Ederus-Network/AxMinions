@@ -6,6 +6,7 @@ import com.artillexstudios.axminions.api.minions.Minion
 import com.artillexstudios.axminions.api.minions.miniontype.MinionType
 import com.artillexstudios.axminions.api.utils.fastFor
 import com.artillexstudios.axminions.api.warnings.Warnings
+import com.artillexstudios.axminions.integrations.mobcoins.MobCoinsHook
 import com.artillexstudios.axminions.minions.MinionTicker
 import com.artillexstudios.axminions.utils.Enchantments
 import kotlin.math.roundToInt
@@ -75,6 +76,19 @@ class CollectorMinionType : MinionType("collector", AxMinionsPlugin.INSTANCE.get
         )
 
         entities?.filterIsInstance<Item>()?.fastFor { item ->
+            // Ederus: mobcoins go to the owner's balance, never into the chest.
+            // If the deposit cannot be made, the coin stays on the ground for a player to pick up.
+            if (MobCoinsHook.isMobCoin(item.itemStack)) {
+                if (!item.isValid) return@fastFor
+                val coins = AxMinionsPlugin.integrations.getStackerIntegration().getStackSize(item).toInt()
+                val value = MobCoinsHook.valueOf(item.itemStack, coins) ?: return@fastFor
+                if (MobCoinsHook.deposit(minion.getOwnerUUID(), value)) {
+                    item.remove()
+                    minion.setActions(minion.getActionAmount() + coins)
+                }
+                return@fastFor
+            }
+
             if (minion.getLinkedInventory()?.firstEmpty() == -1) {
                 Warnings.CONTAINER_FULL.display(minion)
                 return
