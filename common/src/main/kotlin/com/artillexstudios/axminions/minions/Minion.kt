@@ -376,7 +376,9 @@ class Minion(
                 // Ederus: with no tool, show a hint (gui.items.item.empty) so players know where it goes
                 val empty = AxMinionsAPI.INSTANCE.getConfig().getConfig().getSection("gui.items.item.empty")
                 item = if ((tool == null || tool!!.type == Material.AIR) && empty != null) {
-                    ItemBuilder.create(empty).get()
+                    // <tool>: what this minion takes, from tool.name in its own file
+                    val toolName = type.getConfig().getString("tool.name") ?: "una herramienta"
+                    ItemBuilder.create(empty, Placeholder.parsed("tool", toolName)).get()
                 } else {
                     tool?.clone() ?: ItemStack(Material.AIR)
                 }
