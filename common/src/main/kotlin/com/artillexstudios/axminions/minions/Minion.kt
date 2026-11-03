@@ -373,7 +373,15 @@ class Minion(
                 meta.persistentDataContainer.set(Keys.GUI, PersistentDataType.STRING, it)
                 item.itemMeta = meta
             } else if (it.equals("item")) {
-                item = tool?.clone() ?: ItemStack(Material.AIR)
+                // Ederus: with no tool, show a hint (gui.items.item.empty) so players know where it goes
+                val empty = AxMinionsAPI.INSTANCE.getConfig().getConfig().getSection("gui.items.item.empty")
+                item = if ((tool == null || tool!!.type == Material.AIR) && empty != null) {
+                    // <tool>: what this minion takes, from tool.name in its own file
+                    val toolName = type.getConfig().getString("tool.name") ?: "una herramienta"
+                    ItemBuilder.create(empty, Placeholder.parsed("tool", toolName)).get()
+                } else {
+                    tool?.clone() ?: ItemStack(Material.AIR)
+                }
             } else if (it.equals("charge")) {
                 if (Config.CHARGE_ENABLED()) {
                     val charge = Placeholder.parsed("charge", TimeUtils.format(charge - System.currentTimeMillis()))
