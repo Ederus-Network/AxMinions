@@ -13,6 +13,7 @@ import com.artillexstudios.axminions.api.minions.miniontype.MinionTypes
 import com.artillexstudios.axminions.api.utils.CoolDown
 import com.artillexstudios.axminions.api.utils.Keys
 import com.artillexstudios.axminions.api.utils.fastFor
+import com.artillexstudios.axminions.minions.MinionCharging
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
 import java.util.Locale
 import net.md_5.bungee.api.ChatMessageType
@@ -202,126 +203,8 @@ class MinionInventoryListener : Listener {
             }
 
             "charge" -> {
-                if (event.isShiftClick) {
-                    val itemCache = mutableListOf<Pair<ItemStack, String>>()
-                    val section = Config.CHARGE_ITEMS()
-
-                    for (key in section.keys) {
-                        itemCache.add(Pair(ItemBuilder.create(section.getSection(key.toString())).get(), key.toString()))
-                    }
-
-                    while (true) {
-                        val chargeSeconds = (minion.getCharge() - System.currentTimeMillis()) / 1000
-
-                        if ((Config.MAX_CHARGE() * 60) - chargeSeconds < Config.MINIMUM_CHARGE()) {
-                            player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + Messages.CHARGE_NOT_ENOUGH_TIME_PASSED()))
-                            return
-                        }
-
-                        var chargeAmount = Config.CHARGE_AMOUNT()
-                        var itemCharge = false
-
-                        for (pair in itemCache) {
-                            if (player.inventory.containsAtLeast(pair.first, 1)) {
-                                itemCharge = true
-                                chargeAmount = section.getSection(pair.second).getInt("charge")
-                                player.inventory.removeItem(pair.first)
-                                break
-                            }
-                        }
-
-                        if (Config.CHARGE_PRICE() <= 0 && !itemCharge) {
-                            player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + Messages.CHARGE_FAIL()))
-                            return
-                        }
-
-                        if (!itemCharge) {
-                            if ((AxMinionsPlugin.integrations.getEconomyIntegration()?.getBalance(player)
-                                    ?: return) < Config.CHARGE_PRICE()
-                            ) {
-                                player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + Messages.CHARGE_FAIL()))
-                                return
-                            }
-
-                            AxMinionsPlugin.integrations.getEconomyIntegration()?.let {
-                                minion.getOwner()?.let { player ->
-                                    it.takeBalance(player, Config.CHARGE_PRICE())
-                                }
-                            }
-                        }
-
-                        if (chargeSeconds + chargeAmount > Config.MAX_CHARGE() * 60L) {
-                            minion.setCharge(System.currentTimeMillis() + Config.MAX_CHARGE() * 60L * 1000L)
-                            return
-                        }
-
-                        if (minion.getCharge() < System.currentTimeMillis()) {
-                            minion.setCharge(System.currentTimeMillis() + chargeAmount * 1000)
-                        } else {
-                            minion.setCharge(minion.getCharge() + chargeAmount * 1000)
-                        }
-
-                        if (Messages.CHARGE().isNotBlank()) {
-                            player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + Messages.CHARGE()))
-                        }
-                    }
-                } else {
-                    val chargeSeconds = (minion.getCharge() - System.currentTimeMillis()) / 1000
-
-                    if ((Config.MAX_CHARGE() * 60) - chargeSeconds < Config.MINIMUM_CHARGE()) {
-                        player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + Messages.CHARGE_NOT_ENOUGH_TIME_PASSED()))
-                        return
-                    }
-
-                    var chargeAmount = Config.CHARGE_AMOUNT()
-                    var itemCharge = false
-                    val section = Config.CHARGE_ITEMS()
-
-                    for (key in section.keys) {
-                        val item = ItemBuilder.create(section.getSection(key.toString())).get()
-                        if (player.inventory.containsAtLeast(item, 1)) {
-                            itemCharge = true
-                            chargeAmount = section.getSection(key.toString()).getInt("charge")
-                            player.inventory.removeItem(item)
-                            break
-                        }
-                    }
-
-                    if (Config.CHARGE_PRICE() <= 0 && !itemCharge) {
-                        player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + Messages.CHARGE_FAIL()))
-                        return
-                    }
-
-                    if (!itemCharge) {
-                        if ((AxMinionsPlugin.integrations.getEconomyIntegration()?.getBalance(player)
-                                ?: return) < Config.CHARGE_PRICE()
-                        ) {
-                            player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + Messages.CHARGE_FAIL()))
-                            return
-                        }
-
-                        AxMinionsPlugin.integrations.getEconomyIntegration()?.let {
-                            minion.getOwner()?.let { player ->
-                                it.takeBalance(player, Config.CHARGE_PRICE())
-                            }
-                        }
-                    }
-
-                    if (chargeSeconds + chargeAmount > Config.MAX_CHARGE() * 60L) {
-                        minion.setCharge(System.currentTimeMillis() + Config.MAX_CHARGE() * 60L * 1000L)
-                        return
-                    }
-
-                    if (minion.getCharge() < System.currentTimeMillis()) {
-                        minion.setCharge(System.currentTimeMillis() + chargeAmount * 1000)
-                    } else {
-                        minion.setCharge(minion.getCharge() + chargeAmount * 1000)
-                    }
-
-                    if (Messages.CHARGE().isNotBlank()) {
-                        player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + Messages.CHARGE()))
-                    }
-                }
+                // Shared with /myminions so the rules and price stay the same
+                MinionCharging.charge(player, minion, event.isShiftClick)
             }
         }
 

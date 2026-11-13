@@ -14,6 +14,7 @@ import com.artillexstudios.axminions.api.minions.miniontype.MinionType
 import com.artillexstudios.axminions.api.minions.miniontype.MinionTypes
 import com.artillexstudios.axminions.api.utils.fastFor
 import com.artillexstudios.axminions.commands.AxMinionsCommand
+import com.artillexstudios.axminions.commands.MyMinionsCommand
 import com.artillexstudios.axminions.data.H2DataHandler
 import com.artillexstudios.axminions.integrations.Integrations
 import com.artillexstudios.axminions.listeners.ChunkListener
@@ -22,6 +23,7 @@ import com.artillexstudios.axminions.listeners.MinionDamageListener
 import com.artillexstudios.axminions.listeners.MinionDropListener
 import com.artillexstudios.axminions.listeners.MinionInventoryListener
 import com.artillexstudios.axminions.listeners.MinionPlaceListener
+import com.artillexstudios.axminions.listeners.MyMinionsListener
 import com.artillexstudios.axminions.listeners.PlayerListener
 import com.artillexstudios.axminions.listeners.WorldListener
 import com.artillexstudios.axminions.minions.Minion
@@ -107,6 +109,7 @@ class AxMinionsPlugin : AxPlugin() {
         }
 
         handler.register(AxMinionsCommand())
+        handler.register(MyMinionsCommand())
 
         if (handler.isBrigadierSupported) {
             handler.registerBrigadier()
@@ -121,6 +124,7 @@ class AxMinionsPlugin : AxPlugin() {
             it.registerEvents(WorldListener(), this)
             it.registerEvents(MinionDropListener(), this)
             it.registerEvents(PlayerListener(), this)
+            it.registerEvents(MyMinionsListener(), this)
         }
 
         // Retroactively load minions for the already loaded worlds
