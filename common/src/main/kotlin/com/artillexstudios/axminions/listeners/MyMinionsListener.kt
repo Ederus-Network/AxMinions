@@ -1,11 +1,9 @@
 package com.artillexstudios.axminions.listeners
 
 import com.artillexstudios.axapi.utils.StringUtils
-import com.artillexstudios.axminions.api.config.Config
 import com.artillexstudios.axminions.api.config.Messages
 import com.artillexstudios.axminions.api.utils.CoolDown
 import com.artillexstudios.axminions.gui.MyMinionsMenu
-import com.artillexstudios.axminions.minions.MinionCharging
 import com.artillexstudios.axminions.minions.Minions
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -49,16 +47,14 @@ class MyMinionsListener : Listener {
 
         // It may have been picked up or changed hands while the menu was open
         if (minion.getOwnerUUID() != player.uniqueId || !Minions.getMinions().contains(minion)) {
-            player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + MyMinionsMenu.message("gone", "<red>Ese minion ya no está colocado.")))
+            player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + MyMinionsMenu.message("gone", "<red>Ese minion ya no est\u00e1 colocado.")))
             menu.refresh()
             return
         }
 
-        if (!Config.CHARGE_ENABLED()) return
-
-        // Same rules, items and price as the charge button in the minion GUI
-        MinionCharging.charge(player, minion, event.isShiftClick)
-        minion.updateInventories()
-        menu.refresh()
+        // Same as right clicking it in the world as its owner: its own GUI
+        // (charge, upgrade, storage, tool...). Minions stay in memory with
+        // their world loaded, so an unloaded chunk does not matter here.
+        minion.openInventory(player)
     }
 }

@@ -14,7 +14,6 @@ import com.artillexstudios.axminions.api.minions.miniontype.MinionType
 import com.artillexstudios.axminions.api.minions.miniontype.MinionTypes
 import com.artillexstudios.axminions.api.utils.fastFor
 import com.artillexstudios.axminions.commands.AxMinionsCommand
-import com.artillexstudios.axminions.commands.MyMinionsCommand
 import com.artillexstudios.axminions.data.H2DataHandler
 import com.artillexstudios.axminions.integrations.Integrations
 import com.artillexstudios.axminions.listeners.ChunkListener
@@ -109,7 +108,6 @@ class AxMinionsPlugin : AxPlugin() {
         }
 
         handler.register(AxMinionsCommand())
-        handler.register(MyMinionsCommand())
 
         if (handler.isBrigadierSupported) {
             handler.registerBrigadier()

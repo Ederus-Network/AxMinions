@@ -19,11 +19,11 @@ import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
 
 /**
- * /myminions: every minion the player owns (all loaded worlds, loaded or
- * unloaded chunks), with remote charging. Texts live in messages.yml under
+ * /minions list: every minion the player owns (all loaded worlds, loaded or
+ * unloaded chunks), clicking one opens its own GUI. Texts live in messages.yml under
  * "my-minions" and every key has a default here, so old files keep working.
  */
-class MyMinionsMenu(private val player: Player) : InventoryHolder {
+class MyMinionsMenu(private val player: Player, private var page: Int = 0) : InventoryHolder {
     companion object {
         const val SIZE = 54
         const val PER_PAGE = 45
@@ -38,15 +38,16 @@ class MyMinionsMenu(private val player: Player) : InventoryHolder {
             " <gray>- <white>Carga: <#FFCC00><charge>",
             "<status>",
             "",
-            "<#FB8E08><b>(!)</b> Clic para recargarlo",
-            "<#FB8E08><b>(!)</b> Shift + clic para llenar la carga"
+            "<#FB8E08><b>(!)</b> Clic para abrir su men\u00fa"
         )
 
         private val DEFAULT_LORE_NO_CHARGE = listOf(
             "",
             " <gray>- <white>Mundo: <#FFCC00><world>",
             " <gray>- <white>Posici\u00f3n: <#FFCC00><x>, <y>, <z>",
-            "<status>"
+            "<status>",
+            "",
+            "<#FB8E08><b>(!)</b> Clic para abrir su men\u00fa"
         )
 
         fun message(route: String, default: String): String {
@@ -67,10 +68,10 @@ class MyMinionsMenu(private val player: Player) : InventoryHolder {
 
     private val inventory: Inventory
     private var minions: List<Minion> = emptyList()
-    private var page = 0
 
     init {
         minions = ownedMinions(player)
+        page = page.coerceIn(0, pages() - 1)
         inventory = Bukkit.createInventory(this, SIZE, title())
     }
 
@@ -98,11 +99,8 @@ class MyMinionsMenu(private val player: Player) : InventoryHolder {
     fun changePage(delta: Int) {
         val target = page + delta
         if (target < 0 || target >= pages()) return
-        page = target
         // The title shows the page, so a new page needs a new inventory
-        val menu = MyMinionsMenu(player)
-        menu.page = page
-        menu.open()
+        MyMinionsMenu(player, target).open()
     }
 
     /** Minion shown in [slot] of the current page, or null. */
@@ -150,8 +148,8 @@ class MyMinionsMenu(private val player: Player) : InventoryHolder {
                 "",
                 " <gray>- <white>Colocados: <#FFCC00><amount>",
                 "",
-                "<gray>Recargarlos desde aqu\u00ed cuesta lo mismo",
-                "<gray>que hacerlo al lado del minion."
+                "<gray>Haz clic en uno para abrir su men\u00fa",
+                "<gray>como si estuvieras a su lado."
             )), count)
             .get())
     }

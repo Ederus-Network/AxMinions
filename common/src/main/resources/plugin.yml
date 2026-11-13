@@ -24,7 +24,3 @@ softdepend:
   - ItemsAdder
   - zShop
   - PlaceholderAPI
-permissions:
-  axminions.command.myminions:
-    description: "Open /myminions to see and charge your minions remotely"
-    default: true
