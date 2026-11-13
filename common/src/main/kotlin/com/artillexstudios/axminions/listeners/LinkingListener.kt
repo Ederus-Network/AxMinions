@@ -44,7 +44,8 @@ class LinkingListener : Listener {
         }
 
         event.isCancelled = true
-        if (minion.getLocation()
+        // The GUI can be opened remotely (/minions list): a chest in another world is too far
+        if (minion.getLocation().world != event.clickedBlock!!.world || minion.getLocation()
                 .distanceSquared(event.clickedBlock!!.location) > Config.MAX_LINKING_DISTANCE() * Config.MAX_LINKING_DISTANCE()
         ) {
             event.player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + Messages.LINK_FAIL()))

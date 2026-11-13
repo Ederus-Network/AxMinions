@@ -12,6 +12,7 @@ import com.artillexstudios.axminions.api.minions.miniontype.MinionType
 import com.artillexstudios.axminions.api.minions.miniontype.MinionTypes
 import com.artillexstudios.axminions.api.utils.fastFor
 import com.artillexstudios.axminions.converter.LitMinionsConverter
+import com.artillexstudios.axminions.gui.MyMinionsMenu
 import com.artillexstudios.axminions.integrations.island.SuperiorSkyBlock2Integration
 import com.artillexstudios.axminions.minions.Minions
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI
@@ -27,6 +28,19 @@ import java.util.concurrent.CompletableFuture
 
 @Command("axminions", "minion", "minions")
 class AxMinionsCommand {
+
+    // Player command (/minions list), open to everyone: every minion you own;
+    // clicking one opens its own GUI as if it had been right clicked
+    @Subcommand("list")
+    @Description("List your minions and open their menus remotely")
+    fun list(player: Player) {
+        if (MyMinionsMenu.ownedMinions(player).isEmpty()) {
+            player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + MyMinionsMenu.message("empty", "<red>No tienes minions colocados.")))
+            return
+        }
+
+        MyMinionsMenu(player).open()
+    }
 
     @Subcommand("give")
     @CommandPermission("axminions.command.give")

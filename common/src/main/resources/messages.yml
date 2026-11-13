@@ -81,5 +81,48 @@ slot-receive: "<green>You were given <amount> new island minion slots! (<from> -
 
 location-format: "<world>;<x>;<y>;<z>"
 
+# /minions list: the player's minions; clicking one opens its own menu
+# These keys are optional: if they are missing, the plugin uses these same texts.
+my-minions:
+  title: "<#00AAFF>Mis minions <gray>(<page>/<pages>)"
+  empty: "<red>No tienes minions colocados."
+  gone: "<red>Ese minion ya no está colocado."
+  previous: "<#FFCC00><b>«</b> Página anterior"
+  next: "<#FFCC00>Página siguiente <b>»</b>"
+  info:
+    name: "<#00AAFF><b>Tus minions"
+    lore:
+      - ""
+      - " <gray>- <white>Colocados: <#FFCC00><amount>"
+      - ""
+      - "<gray>Haz clic en uno para abrir su menú"
+      - "<gray>como si estuvieras a su lado."
+  # Placeholders: <type>, <level>, <level_color>, <world>, <x>, <y>, <z>, <charge>
+  # A line with only <status> is replaced by one of the status lines below
+  entry:
+    name: "<type> <gray>(Nivel <level_color><level><gray>)"
+    lore:
+      - ""
+      - " <gray>- <white>Mundo: <#FFCC00><world>"
+      - " <gray>- <white>Posición: <#FFCC00><x>, <y>, <z>"
+      - " <gray>- <white>Carga: <#FFCC00><charge>"
+      - "<status>"
+      - ""
+      - "<#FB8E08><b>(!)</b> Clic para abrir su menú"
+    # Used when charge.enabled is false in config.yml
+    lore-no-charge:
+      - ""
+      - " <gray>- <white>Mundo: <#FFCC00><world>"
+      - " <gray>- <white>Posición: <#FFCC00><x>, <y>, <z>"
+      - "<status>"
+      - ""
+      - "<#FB8E08><b>(!)</b> Clic para abrir su menú"
+  status:
+    working: " <gray>- <white>Estado: <#33FF33>Trabajando"
+    no-charge: " <gray>- <white>Estado: <#FF3333>Sin carga"
+    unloaded: " <gray>- <white>Estado: <gray>En pausa (zona sin cargar)"
+    # <warning> is the minion's current warning from warnings.*
+    warning: " <gray>- <white>Aviso: <warning>"
+
 # Do not change!
 config-version: 9
