@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.artillexstudios.axminions'
-version = '1.0.20-ederus4'
+version = '1.0.20-ederus5'
 
 repositories {
     mavenCentral()

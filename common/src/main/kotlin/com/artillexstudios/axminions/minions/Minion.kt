@@ -639,6 +639,7 @@ class Minion(
             return
         }
 
+        if (MobCoinStacking.absorb(linkedInventory!!, itemStack)) return
         val remaining = linkedInventory?.addItem(itemStack)
 
         remaining?.fastFor { _, u ->
@@ -651,6 +652,8 @@ class Minion(
             return null
         }
 
+        // Ederus: a mob coin added to one already in the chest counts as stored.
+        if (MobCoinStacking.absorb(linkedInventory!!, itemStack)) return HashMap()
         return linkedInventory?.addItem(itemStack)
     }
 
