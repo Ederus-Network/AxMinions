@@ -10,6 +10,51 @@ tool:
 
 delete-unsellable: true
 
+# Ederus: equipo gastado que sueltan los mobs (arcos, armaduras...).
+# Desde este nivel el vendedor lo vende al precio de uno nuevo por la durabilidad que le queda
+# (un arco a la mitad paga la mitad). Los encantamientos vanilla no suben el precio.
+# Nunca se vende asi un objeto con nombre, lore, modelo o datos de otro plugin.
+# from-level: 0 lo apaga.
+sell-damaged:
+  from-level: 10
+  materials:
+    - "BOW"
+    - "CROSSBOW"
+    - "TRIDENT"
+    - "LEATHER_HELMET"
+    - "LEATHER_CHESTPLATE"
+    - "LEATHER_LEGGINGS"
+    - "LEATHER_BOOTS"
+    - "CHAINMAIL_HELMET"
+    - "CHAINMAIL_CHESTPLATE"
+    - "CHAINMAIL_LEGGINGS"
+    - "CHAINMAIL_BOOTS"
+    - "IRON_HELMET"
+    - "IRON_CHESTPLATE"
+    - "IRON_LEGGINGS"
+    - "IRON_BOOTS"
+    - "GOLDEN_HELMET"
+    - "GOLDEN_CHESTPLATE"
+    - "GOLDEN_LEGGINGS"
+    - "GOLDEN_BOOTS"
+    - "COPPER_HELMET"
+    - "COPPER_CHESTPLATE"
+    - "COPPER_LEGGINGS"
+    - "COPPER_BOOTS"
+    - "GOLDEN_SWORD"
+    - "STONE_SWORD"
+    - "IRON_SWORD"
+    - "IRON_SHOVEL"
+    - "IRON_AXE"
+    - "GOLDEN_AXE"
+
+# Ederus: tope diario por dueno y material, en unidades. Cuenta lo que venden TODOS los
+# vendedores de un mismo dueno. Al llegar al tope ese material se queda en el cofre (no se
+# borra) hasta el dia siguiente. Se reinicia a medianoche del servidor. 0 = no se vende nunca.
+# Sin esta seccion se usa BLAZE_ROD: 10000; para quitar todos los topes deja "daily-limits: {}".
+daily-limits:
+  BLAZE_ROD: 10000
+
 item:
   type: "player_head"
   texture: "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZDI0YmE3NjBhNjFkZDI1NmM1MmIzMjUxMjlmNDYwMTZhZTg5MjIzMmEwZGVhMTcxNWY5OTdmN2M0ZDYyMmJlZiJ9fX0="

@@ -166,6 +166,9 @@ class AxMinionsPlugin : AxPlugin() {
             }
         }
 
+        // Ederus: keep the daily counters of the seller minions across restarts.
+        SellerMinionType.saveLimits()
+
         dataHandler.disable()
     }
 
