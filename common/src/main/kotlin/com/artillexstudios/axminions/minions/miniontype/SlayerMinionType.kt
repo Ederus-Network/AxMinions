@@ -81,7 +81,13 @@ class SlayerMinionType : MinionType("slayer", AxMinionsPlugin.INSTANCE.getResour
                 return@fastFor
             }
 
-            NMSHandler.get().attack(minion, it)
+            // Ederus: other plugins (UltimateMobCoins) read which minion is hitting right now.
+            SlayerContext.current = minion
+            try {
+                NMSHandler.get().attack(minion, it)
+            } finally {
+                SlayerContext.current = null
+            }
             minion.damageTool()
         }
     }
