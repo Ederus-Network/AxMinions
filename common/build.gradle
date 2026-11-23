@@ -2,6 +2,8 @@ group = 'com.artillexstudios.axminions.common'
 version = rootProject.version
 
 processResources {
+    // Sin esto Gradle da el plugin.yml por al dia y se queda con la version anterior.
+    inputs.property "version", version
     filesMatching("plugin.yml") {
         expand(version: version)
     }
