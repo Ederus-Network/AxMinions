@@ -52,6 +52,8 @@ class MinionPlaceListener : Listener {
         val level = meta.persistentDataContainer.get(Keys.LEVEL, PersistentDataType.INTEGER) ?: 0
         val stats = meta.persistentDataContainer.get(Keys.STATISTICS, PersistentDataType.LONG) ?: 0
         val charge = meta.persistentDataContainer.get(Keys.CHARGE, PersistentDataType.LONG) ?: 0
+        // Ederus: collector filter carried on the item
+        val filterData = meta.persistentDataContainer.get(com.artillexstudios.axminions.minions.CollectorFilters.ITEM_KEY, PersistentDataType.STRING)
 
         if (Config.PLACE_PERMISSION() && !event.player.hasPermission("axminions.place.${minionType.getName()}")) {
             event.player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + Messages.PLACE_MISSING_PERMISSION()))
@@ -164,6 +166,7 @@ class MinionPlaceListener : Listener {
                 0,
                 charge
             )
+            com.artillexstudios.axminions.minions.CollectorFilters.restore(locationId, filterData)
             Minions.startTicking(chunk)
 
 

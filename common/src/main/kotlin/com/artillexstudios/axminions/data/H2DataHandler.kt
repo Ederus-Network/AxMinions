@@ -81,12 +81,53 @@ class H2DataHandler : DataHandler {
             }
         }
 
+        // Ederus: item filter of the collector minion (see CollectorFilters)
+        dataSource.connection.use { connection ->
+            connection.prepareStatement("CREATE TABLE IF NOT EXISTS `axminions_collector_filters`(`location_id` INT PRIMARY KEY, `data` CLOB);").use {
+                it.executeUpdate()
+            }
+        }
+
         if (Config.ISLAND_LIMIT() > 0) {
             dataSource.connection.use { connection ->
                 connection.prepareStatement("CREATE TABLE IF NOT EXISTS `axminions_island_counter`(`island` VARCHAR(256) PRIMARY KEY, `placed` INT);")
                     .use {
                         it.executeUpdate()
                     }
+            }
+        }
+    }
+
+    fun loadCollectorFilters(): Map<Int, String> {
+        val result = hashMapOf<Int, String>()
+        dataSource.connection.use { connection ->
+            connection.prepareStatement("SELECT `location_id`, `data` FROM `axminions_collector_filters`;").use { statement ->
+                statement.executeQuery().use { resultSet ->
+                    while (resultSet.next()) {
+                        val data = resultSet.getString(2) ?: continue
+                        result[resultSet.getInt(1)] = data
+                    }
+                }
+            }
+        }
+        return result
+    }
+
+    fun saveCollectorFilter(locationId: Int, data: String) {
+        dataSource.connection.use { connection ->
+            connection.prepareStatement("MERGE INTO `axminions_collector_filters`(`location_id`, `data`) KEY(`location_id`) VALUES(?,?);").use {
+                it.setInt(1, locationId)
+                it.setString(2, data)
+                it.executeUpdate()
+            }
+        }
+    }
+
+    fun deleteCollectorFilter(locationId: Int) {
+        dataSource.connection.use { connection ->
+            connection.prepareStatement("DELETE FROM `axminions_collector_filters` WHERE `location_id` = ?;").use {
+                it.setInt(1, locationId)
+                it.executeUpdate()
             }
         }
     }

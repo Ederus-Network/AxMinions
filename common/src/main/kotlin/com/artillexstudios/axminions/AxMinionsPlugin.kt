@@ -123,6 +123,7 @@ class AxMinionsPlugin : AxPlugin() {
             it.registerEvents(MinionDropListener(), this)
             it.registerEvents(PlayerListener(), this)
             it.registerEvents(MyMinionsListener(), this)
+            it.registerEvents(com.artillexstudios.axminions.listeners.CollectorFilterListener(), this)
         }
 
         // Retroactively load minions for the already loaded worlds
@@ -176,6 +177,7 @@ class AxMinionsPlugin : AxPlugin() {
         if (Config.DATABASE_TYPE().equals("H2", true)) {
             dataHandler = H2DataHandler()
             dataHandler.setup()
+            com.artillexstudios.axminions.minions.CollectorFilters.load()
         }
     }
 }

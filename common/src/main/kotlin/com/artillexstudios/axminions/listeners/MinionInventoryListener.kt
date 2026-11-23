@@ -122,6 +122,12 @@ class MinionInventoryListener : Listener {
         val type = meta.persistentDataContainer.get(Keys.GUI, PersistentDataType.STRING)
 
         when (type) {
+            // Ederus: collector filter menu
+            "filter" -> {
+                com.artillexstudios.axminions.gui.CollectorFilterMenu(player, minion).open()
+                return
+            }
+
             "rotate" -> {
                 when (minion.getDirection()) {
                     Direction.NORTH -> minion.setDirection(Direction.WEST)

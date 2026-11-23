@@ -202,11 +202,21 @@ class Minion(
         if (preBreakEvent.isCancelled) return
 
         LinkingListener.linking.remove(event.player)
+        // Ederus: the collector filter goes with the minion item
+        val filterData = CollectorFilters.encode(locationID)
         remove()
         setTicking(false)
         openInventories.fastFor { it.viewers.fastFor { viewer -> viewer.closeInventory() } }
+        closeFilterMenus()
         val tool = getTool()
         val asItem = getAsItem()
+        if (filterData != null) {
+            val itemMeta = asItem.itemMeta
+            if (itemMeta != null) {
+                itemMeta.persistentDataContainer.set(CollectorFilters.ITEM_KEY, PersistentDataType.STRING, filterData)
+                asItem.itemMeta = itemMeta
+            }
+        }
         val remaining = event.player.inventory.addItem(tool, asItem)
 
         if (getType() == MinionTypes.getMinionTypes()["seller"]) {
@@ -421,6 +431,42 @@ class Minion(
                 inventory.setItem(AxMinionsAPI.INSTANCE.getConfig().get("gui.items.$it.slot"), item)
             }
         }
+
+        // Ederus: filter button, only on the collector (gui.filter in collector.yml)
+        if (type.getName() == "collector") {
+            val filter = CollectorFilters.get(locationID)
+            val count = filter?.materials?.size ?: 0
+            val modeText = when {
+                count == 0 -> type.getConfig().get("gui.filter.mode-empty", "<gray>sin filtro, recoge todo")
+                filter!!.whitelist -> type.getConfig().get("gui.filter.mode-whitelist", "<#33FF33>solo estos")
+                else -> type.getConfig().get("gui.filter.mode-blacklist", "<#FF5555>todo menos estos")
+            }
+            val resolvers = arrayOf<net.kyori.adventure.text.minimessage.tag.resolver.TagResolver>(
+                Placeholder.parsed("mode", modeText),
+                Placeholder.unparsed("amount", count.toString())
+            )
+            val section = type.getConfig().getSection("gui.filter")
+            val button = if (section != null && section.contains("type")) {
+                ItemBuilder.create(section, *resolvers).get()
+            } else {
+                ItemBuilder.create(Material.HOPPER)
+                    .setName("<#FFAA00><b>Filtro de objetos", *resolvers)
+                    .setLore(listOf(
+                        "",
+                        " <gray>- <white>Modo: <mode>",
+                        " <gray>- <white>Objetos en el filtro: <#FFAA00><amount>",
+                        "",
+                        "<#FFAA00><b>[!]</b> Haz clic para elegir qué recoge"
+                    ), *resolvers)
+                    .get()
+            }
+            val buttonMeta = button.itemMeta
+            if (buttonMeta != null) {
+                buttonMeta.persistentDataContainer.set(Keys.GUI, PersistentDataType.STRING, "filter")
+                button.itemMeta = buttonMeta
+            }
+            inventory.setItem(type.getConfig().get("gui.filter.slot", 14), button)
+        }
     }
 
     override fun openInventory(player: Player) {
@@ -612,10 +658,19 @@ class Minion(
         return this.direction
     }
 
+    /** Ederus: closes the collector filter menu of this minion for whoever has it open. */
+    private fun closeFilterMenus() {
+        Bukkit.getOnlinePlayers().forEach { viewer ->
+            val holder = viewer.openInventory.topInventory.holder as? com.artillexstudios.axminions.gui.CollectorFilterMenu ?: return@forEach
+            if (holder.minion === this) viewer.closeInventory()
+        }
+    }
+
     override fun remove() {
         Warnings.remove(this, warning ?: Warnings.NO_CONTAINER)
         Minions.remove(this)
         entity.remove()
+        CollectorFilters.remove(locationID)
 
         AxMinionsPlugin.dataQueue.submit {
             AxMinionsPlugin.dataHandler.deleteMinion(this)
