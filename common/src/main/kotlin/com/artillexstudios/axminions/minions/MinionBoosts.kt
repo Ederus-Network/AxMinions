@@ -41,8 +41,10 @@ object MinionBoosts {
     private val boosts = ConcurrentHashMap<Int, ItemStack>()
 
     val EXPIRES_KEY: NamespacedKey by lazy { NamespacedKey(AxMinionsPlugin.INSTANCE, "boost_expires") }
-    private val WAND_MULTIPLIER = NamespacedKey.fromString("edm:sellwand_multiplier")!!
-    private val WAND_USES = NamespacedKey.fromString("edm:sellwand_uses")!!
+    /** The EDM sell wand keeps its data as <namespace>:sellwand_multiplier / sellwand_uses (today "ederussellwands"). */
+    private fun wandKey(data: org.bukkit.persistence.PersistentDataContainer, name: String): NamespacedKey? {
+        return data.keys.firstOrNull { it.key == name }
+    }
 
     fun unlockLevel(minion: Minion): Int {
         return minion.getType().getConfig().get("boost.level", 10)
@@ -86,9 +88,10 @@ object MinionBoosts {
     fun idOf(item: ItemStack?): String? {
         if (item == null || item.type.isAir || !item.hasItemMeta()) return null
         val data = item.itemMeta!!.persistentDataContainer
-        val multiplier = data.get(WAND_MULTIPLIER, PersistentDataType.DOUBLE)
+        val multiplierKey = wandKey(data, "sellwand_multiplier")
+        val multiplier = multiplierKey?.let { data.get(it, PersistentDataType.DOUBLE) }
         if (multiplier != null) {
-            val uses = data.get(WAND_USES, PersistentDataType.INTEGER) ?: 0
+            val uses = wandKey(data, "sellwand_uses")?.let { data.get(it, PersistentDataType.INTEGER) } ?: 0
             val label = if (multiplier == Math.floor(multiplier)) multiplier.toInt().toString() else multiplier.toString().replace('.', '_')
             return "SELLWAND_X" + label + if (uses == -1) "_INFINITA" else ""
         }
