@@ -136,6 +136,7 @@ upgrades:
 boost:
   level: 10
   slot: 14
+  icon: NAUTILUS_SHELL
   accepts: "<#FFAA00>Catalizador Abisal"
   key-command: "crates key give %player% %key% 1"
   items:

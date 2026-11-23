@@ -141,6 +141,7 @@ upgrades:
 boost:
   level: 10
   slot: 14
+  icon: RESIN_BRICK
   accepts: "<#FFAA00>Catalizador de Savia"
   items:
     CATALIZADOR_SAVIA:

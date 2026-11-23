@@ -147,6 +147,7 @@ upgrades:
 boost:
   level: 10
   slot: 14
+  icon: BLAZE_POWDER
   accepts: "<#FFAA00>Catalizador de Caza"
   items:
     CATALIZADOR_CAZA:

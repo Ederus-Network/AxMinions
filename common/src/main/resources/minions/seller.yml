@@ -196,6 +196,7 @@ upgrades:
 boost:
   level: 10
   slot: 14
+  icon: BLAZE_ROD
   accepts: "<#FFF6A1>SellWand x3 Infinita"
   items:
     SELLWAND_X3_INFINITA:

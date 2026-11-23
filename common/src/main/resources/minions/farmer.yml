@@ -149,6 +149,7 @@ config-version: 1
 boost:
   level: 10
   slot: 14
+  icon: GLISTERING_MELON_SLICE
   accepts: "<#FFAA00>Catalizador de Cosecha"
   items:
     CATALIZADOR_COSECHA:

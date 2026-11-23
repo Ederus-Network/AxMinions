@@ -164,6 +164,7 @@ config-version: 1
 boost:
   level: 10
   slot: 14
+  icon: AMETHYST_SHARD
   accepts: "<#FFAA00>Catalizador de Veta"
   items:
     CATALIZADOR_VETA:

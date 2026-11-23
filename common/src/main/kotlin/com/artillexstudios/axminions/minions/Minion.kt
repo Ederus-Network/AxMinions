@@ -463,7 +463,9 @@ class Minion(
             val boost = MinionBoosts.get(locationID)
             val shown = if (boost == null) {
                 val accepts = type.getConfig().get("boost.accepts", "<gray>-")
-                ItemBuilder.create(Material.LIGHT_GRAY_STAINED_GLASS_PANE)
+                // Ederus: boost.icon of the minion file (the material of its catalyst)
+                val icon = Material.matchMaterial(type.getConfig().get("boost.icon", "NETHER_STAR")) ?: Material.NETHER_STAR
+                ItemBuilder.create(icon)
                     .setName(MinionBoosts.message("empty.name", "<#FFAA00><b>Potenciador"))
                     .setLore(MinionBoosts.messageList("empty.lore", listOf(
                         "",
@@ -479,8 +481,8 @@ class Minion(
                     val expires = MinionBoosts.expiresAt(copy)
                     val definition = MinionBoosts.definitionFor(this, copy)
                     val time = when {
-                        definition == null -> MinionBoosts.message("time.invalid", "<red>No vale para este minion")
-                        definition.duration <= 0 -> MinionBoosts.message("time.permanent", "<#33FF33>Permanente")
+                        definition == null -> MinionBoosts.message("time.invalid", "<red>no vale para este minion")
+                        definition.duration <= 0 -> MinionBoosts.message("time.permanent", "<#33FF33>permanente")
                         else -> MinionBoosts.message("time.left", "<#FFCC00><left>").replace("<left>", MinionBoosts.formatLeft((expires ?: 0L) - System.currentTimeMillis()))
                     }
                     val extra = MinionBoosts.messageList("filled.lore", listOf(

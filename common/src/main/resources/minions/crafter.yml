@@ -126,6 +126,7 @@ upgrades:
 boost:
   level: 10
   slot: 14
+  icon: NETHERITE_SCRAP
   accepts: "<#FFAA00>Catalizador de Forja"
   items:
     CATALIZADOR_FORJA:
