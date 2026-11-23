@@ -92,6 +92,8 @@ class FisherMinionType : MinionType("fisher", AxMinionsPlugin.INSTANCE.getResour
         val xp = ThreadLocalRandom.current().nextInt(6) + 1
 
         minion.addToContainerOrDrop(loot)
+        // Ederus: boost of the level 10 slot (keys per catch)
+        com.artillexstudios.axminions.minions.MinionBoosts.rollKeys(minion)
         val coerced = (minion.getStorage() + xp).coerceIn(0.0, minion.getType().getLong("storage", minion.getLevel()).toDouble())
         minion.setStorage(coerced)
 

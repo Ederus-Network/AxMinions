@@ -191,3 +191,13 @@ upgrades:
         type: LEATHER_BOOTS
         color: "150, 0, 200"
         glow: true
+
+# Ederus: slot of level 10 (see MinionBoosts). duration in seconds, 0 = permanent.
+boost:
+  level: 10
+  slot: 14
+  accepts: "<#FFF6A1>SellWand x3 Infinita"
+  items:
+    SELLWAND_X3_INFINITA:
+      sell-multiplier: 3.0
+      duration: 0

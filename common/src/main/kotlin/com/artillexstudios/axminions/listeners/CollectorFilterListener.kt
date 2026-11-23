@@ -37,7 +37,7 @@ class CollectorFilterListener : Listener {
         val minion = menu.minion
         // It may have been picked up while the menu was open
         if (!Minions.getMinions().contains(minion)) {
-            player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + CollectorFilterMenu.message("gone", "<red>Ese minion ya no está colocado.")))
+            player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + CollectorFilterMenu.message("gone", "<red>Ese minion ya no est\u00e1 colocado.")))
             player.closeInventory()
             return
         }
@@ -50,11 +50,11 @@ class CollectorFilterListener : Listener {
             if (material == Material.AIR) return
             val filter = CollectorFilters.getOrCreate(locationId)
             if (material in filter.materials) {
-                player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + CollectorFilterMenu.message("already", "<gray>Ese objeto ya está en el filtro.")))
+                player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + CollectorFilterMenu.message("already", "<gray>Ese objeto ya est\u00e1 en el filtro.")))
                 return
             }
             if (filter.materials.size >= CollectorFilters.MAX_ITEMS) {
-                player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + CollectorFilterMenu.message("full", "<red>El filtro está lleno.")))
+                player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + CollectorFilterMenu.message("full", "<red>El filtro est\u00e1 lleno.")))
                 return
             }
             filter.materials.add(material)

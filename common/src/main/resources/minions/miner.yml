@@ -159,3 +159,16 @@ upgrades:
         glow: true
 
 config-version: 1
+
+# Ederus: slot of level 10 (see MinionBoosts). duration in seconds, 0 = permanent.
+boost:
+  level: 10
+  slot: 14
+  accepts: "<#FFAA00>Catalizador de Veta"
+  items:
+    CATALIZADOR_VETA:
+      double-chance: 20
+      duration: 0
+    CATALIZADOR_VETA_7D:
+      double-chance: 20
+      duration: 604800

@@ -142,3 +142,16 @@ upgrades:
         type: LEATHER_BOOTS
         color: "200, 0, 0"
         glow: true
+
+# Ederus: slot of level 10 (see MinionBoosts). duration in seconds, 0 = permanent.
+boost:
+  level: 10
+  slot: 14
+  accepts: "<#FFAA00>Catalizador de Caza"
+  items:
+    CATALIZADOR_CAZA:
+      speed: 25
+      duration: 0
+    CATALIZADOR_CAZA_7D:
+      speed: 25
+      duration: 604800

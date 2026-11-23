@@ -136,3 +136,16 @@ upgrades:
         type: LEATHER_BOOTS
         color: "0, 150, 200"
         glow: true
+
+# Ederus: slot of level 10 (see MinionBoosts). duration in seconds, 0 = permanent.
+boost:
+  level: 10
+  slot: 14
+  accepts: "<#FFAA00>Catalizador de Savia"
+  items:
+    CATALIZADOR_SAVIA:
+      double-chance: 20
+      duration: 0
+    CATALIZADOR_SAVIA_7D:
+      double-chance: 20
+      duration: 604800

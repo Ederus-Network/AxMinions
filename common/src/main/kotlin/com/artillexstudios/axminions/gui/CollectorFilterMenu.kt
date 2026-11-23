@@ -71,7 +71,7 @@ class CollectorFilterMenu(val player: Player, val minion: Minion) : InventoryHol
         }
 
         inventory.setItem(BACK_SLOT, ItemBuilder.create(Material.ARROW)
-            .setName(message("back", "<#FFCC00><b>«</b> Volver al minion"))
+            .setName(message("back", "<#FFCC00><b>\u00ab</b> Volver al minion"))
             .get())
 
         val count = Placeholder.unparsed("amount", materials.size.toString())
@@ -82,7 +82,7 @@ class CollectorFilterMenu(val player: Player, val minion: Minion) : InventoryHol
                 .setLore(messageList("mode.whitelist.lore", listOf(
                     "",
                     " <gray>- <white>Recoge <#33FF33>solo</#33FF33> los objetos del filtro.",
-                    " <gray>- <white>Con el filtro vacío recoge todo.",
+                    " <gray>- <white>Con el filtro vac\u00edo recoge todo.",
                     "",
                     "<#FFCC00><b>[!]</b> Clic para cambiar a <white>todo menos estos"
                 )))
@@ -93,7 +93,7 @@ class CollectorFilterMenu(val player: Player, val minion: Minion) : InventoryHol
                 .setLore(messageList("mode.blacklist.lore", listOf(
                     "",
                     " <gray>- <white>Recoge todo <#FF5555>menos</#FF5555> los objetos del filtro.",
-                    " <gray>- <white>Con el filtro vacío recoge todo.",
+                    " <gray>- <white>Con el filtro vac\u00edo recoge todo.",
                     "",
                     "<#FFCC00><b>[!]</b> Clic para cambiar a <white>solo estos"
                 )))
@@ -101,11 +101,11 @@ class CollectorFilterMenu(val player: Player, val minion: Minion) : InventoryHol
         }
 
         inventory.setItem(INFO_SLOT, ItemBuilder.create(Material.BOOK)
-            .setName(message("info.name", "<#FFAA00><b>Cómo funciona"))
+            .setName(message("info.name", "<#FFAA00><b>C\u00f3mo funciona"))
             .setLore(messageList("info.lore", listOf(
                 "",
                 " <gray>- <white>Haz clic en un objeto de tu inventario",
-                "   <white>para añadirlo (no se gasta).",
+                "   <white>para a\u00f1adirlo (no se gasta).",
                 " <gray>- <white>Haz clic en un objeto de arriba para quitarlo.",
                 "",
                 " <gray>- <white>Objetos en el filtro: <#FFCC00><amount>/<max>"

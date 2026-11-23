@@ -64,6 +64,36 @@ class MinionInventoryListener : Listener {
             }
         }
 
+        // Ederus: a boost from the player's inventory goes into the level 10 slot
+        if (event.clickedInventory == player.inventory && event.currentItem != null
+            && minion.getType().getName() != "collector"
+            && com.artillexstudios.axminions.minions.MinionBoosts.definitionFor(minion, event.currentItem) != null) {
+            val boosts = com.artillexstudios.axminions.minions.MinionBoosts
+            if (!boosts.unlocked(minion)) {
+                player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + boosts.message("need-level", "<red>El potenciador se desbloquea en el nivel <level>.").replace("<level>", boosts.unlockLevel(minion).toString())))
+                return
+            }
+            val clickedItem = event.currentItem!!
+            val single = clickedItem.clone()
+            single.amount = 1
+            val definition = boosts.definitionFor(minion, single)!!
+            val expires = boosts.expiresAt(single)
+            if (definition.duration > 0 && expires != null && expires <= System.currentTimeMillis()) {
+                player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + boosts.message("spent", "<red>Ese potenciador ya est\u00e1 agotado.")))
+                return
+            }
+            val previous = boosts.get(minion.getLocationId())
+            clickedItem.amount = clickedItem.amount - 1
+            boosts.startClock(single, definition)
+            boosts.set(minion.getLocationId(), single)
+            if (previous != null) {
+                player.inventory.addItem(previous).values.forEach { player.world.dropItemNaturally(player.location, it) }
+            }
+            minion.markDirty()
+            minion.updateInventories()
+            return
+        }
+
         if (event.clickedInventory == player.inventory && event.currentItem != null) {
             if (event.currentItem!!.type !in allowedTools) {
                 player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + Messages.WRONG_TOOL()))
@@ -122,9 +152,25 @@ class MinionInventoryListener : Listener {
         val type = meta.persistentDataContainer.get(Keys.GUI, PersistentDataType.STRING)
 
         when (type) {
-            // Ederus: collector filter menu
+            // Ederus: collector filter menu, from the unlock level
             "filter" -> {
+                if (!com.artillexstudios.axminions.minions.MinionBoosts.unlocked(minion)) return
                 com.artillexstudios.axminions.gui.CollectorFilterMenu(player, minion).open()
+                return
+            }
+
+            // Ederus: take the boost out of the level 10 slot
+            "boost" -> {
+                val boosts = com.artillexstudios.axminions.minions.MinionBoosts
+                val current = boosts.get(minion.getLocationId()) ?: return
+                if (player.inventory.firstEmpty() == -1) {
+                    player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + Messages.ERROR_INVENTORY_FULL()))
+                    return
+                }
+                boosts.set(minion.getLocationId(), null)
+                player.inventory.addItem(current)
+                minion.markDirty()
+                minion.updateInventories()
                 return
             }
 

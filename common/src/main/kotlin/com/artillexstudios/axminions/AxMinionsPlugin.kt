@@ -178,6 +178,7 @@ class AxMinionsPlugin : AxPlugin() {
             dataHandler = H2DataHandler()
             dataHandler.setup()
             com.artillexstudios.axminions.minions.CollectorFilters.load()
+            com.artillexstudios.axminions.minions.MinionBoosts.load()
         }
     }
 }

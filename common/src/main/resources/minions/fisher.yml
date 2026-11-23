@@ -131,3 +131,21 @@ upgrades:
         type: LEATHER_BOOTS
         color: "0, 200, 200"
         glow: true
+
+# Ederus: slot of level 10 (see MinionBoosts). duration in seconds, 0 = permanent.
+boost:
+  level: 10
+  slot: 14
+  accepts: "<#FFAA00>Catalizador Abisal"
+  key-command: "crates key give %player% %key% 1"
+  items:
+    CATALIZADOR_ABISAL:
+      keys:
+      - "llave_epica:0.2:Llave Épica"
+      - "legendary:0.05:Llave Legendaria"
+      duration: 0
+    CATALIZADOR_ABISAL_7D:
+      keys:
+      - "llave_epica:0.2:Llave Épica"
+      - "legendary:0.05:Llave Legendaria"
+      duration: 604800

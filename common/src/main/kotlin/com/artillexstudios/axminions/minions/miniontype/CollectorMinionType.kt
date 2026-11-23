@@ -7,6 +7,7 @@ import com.artillexstudios.axminions.api.minions.miniontype.MinionType
 import com.artillexstudios.axminions.api.utils.fastFor
 import com.artillexstudios.axminions.api.warnings.Warnings
 import com.artillexstudios.axminions.minions.CollectorFilters
+import com.artillexstudios.axminions.minions.MinionBoosts
 import com.artillexstudios.axminions.minions.MinionTicker
 import com.artillexstudios.axminions.utils.Enchantments
 import kotlin.math.roundToInt
@@ -77,7 +78,7 @@ class CollectorMinionType : MinionType("collector", AxMinionsPlugin.INSTANCE.get
 
         entities?.filterIsInstance<Item>()?.fastFor { item ->
             // Ederus: collector filter
-            if (!CollectorFilters.allows(minion.getLocationId(), item.itemStack.type)) return@fastFor
+            if (MinionBoosts.unlocked(minion) && !CollectorFilters.allows(minion.getLocationId(), item.itemStack.type)) return@fastFor
 
             if (minion.getLinkedInventory()?.firstEmpty() == -1) {
                 Warnings.CONTAINER_FULL.display(minion)

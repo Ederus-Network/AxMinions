@@ -226,6 +226,8 @@ class SellerMinionType : MinionType("seller", AxMinionsPlugin.INSTANCE.getResour
         }
 
         price *= getDouble("multiplier", minion.getLevel())
+        // Ederus: boost of the level 10 slot (SellWand x3 Infinita)
+        price *= com.artillexstudios.axminions.minions.MinionBoosts.sellMultiplier(minion)
 
         if (minion.getStorage() + price > getDouble("storage", minion.getLevel())) {
             return false

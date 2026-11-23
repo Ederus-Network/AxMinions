@@ -49,6 +49,7 @@ import org.bukkit.inventory.meta.ItemMeta
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.util.EulerAngle
 import java.text.NumberFormat
+import kotlin.math.roundToInt
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -204,6 +205,8 @@ class Minion(
         LinkingListener.linking.remove(event.player)
         // Ederus: the collector filter goes with the minion item
         val filterData = CollectorFilters.encode(locationID)
+        // Ederus: the boost goes back with the tool (taken before remove() clears it)
+        val boost = MinionBoosts.take(locationID)
         remove()
         setTicking(false)
         openInventories.fastFor { it.viewers.fastFor { viewer -> viewer.closeInventory() } }
@@ -217,7 +220,11 @@ class Minion(
                 asItem.itemMeta = itemMeta
             }
         }
-        val remaining = event.player.inventory.addItem(tool, asItem)
+        val remaining = if (boost != null) {
+            event.player.inventory.addItem(tool, asItem, boost)
+        } else {
+            event.player.inventory.addItem(tool, asItem)
+        }
 
         if (getType() == MinionTypes.getMinionTypes()["seller"]) {
             AxMinionsPlugin.integrations.getEconomyIntegration()?.let {
@@ -256,6 +263,10 @@ class Minion(
         Warnings.remove(this, Warnings.NO_CHARGE)
 
         Scheduler.get().executeAt(location) {
+            // Ederus: a timed boost that ran out is taken out even if this minion never asks for it
+            if (MinionTicker.getTick() % 200L == 0L && MinionBoosts.get(locationID) != null) {
+                MinionBoosts.active(this)
+            }
             type.tick(this)
         }
         animate()
@@ -432,8 +443,69 @@ class Minion(
             }
         }
 
-        // Ederus: filter button, only on the collector (gui.filter in collector.yml)
-        if (type.getName() == "collector") {
+        // Ederus: level 10 slot. Below that level, a locked hint.
+        val extraSlot: Int = if (type.getName() == "collector") type.getConfig().get("gui.filter.slot", 14) else type.getConfig().get("boost.slot", 14)
+        if (!MinionBoosts.unlocked(this)) {
+            val unlock = Placeholder.unparsed("level", MinionBoosts.unlockLevel(this).toString())
+            val locked = if (type.getName() == "collector") {
+                ItemBuilder.create(Material.GRAY_DYE)
+                    .setName(MinionBoosts.message("locked-filter.name", "<gray><b>Filtro de objetos"), unlock)
+                    .setLore(MinionBoosts.messageList("locked-filter.lore", listOf("", " <gray>Se desbloquea en el <white>nivel <level></white>.")), unlock)
+                    .get()
+            } else {
+                ItemBuilder.create(Material.GRAY_DYE)
+                    .setName(MinionBoosts.message("locked.name", "<gray><b>Potenciador"), unlock)
+                    .setLore(MinionBoosts.messageList("locked.lore", listOf("", " <gray>Se desbloquea en el <white>nivel <level></white>.")), unlock)
+                    .get()
+            }
+            inventory.setItem(extraSlot, locked)
+        } else if (type.getName() != "collector") {
+            val boost = MinionBoosts.get(locationID)
+            val shown = if (boost == null) {
+                val accepts = type.getConfig().get("boost.accepts", "<gray>-")
+                ItemBuilder.create(Material.LIGHT_GRAY_STAINED_GLASS_PANE)
+                    .setName(MinionBoosts.message("empty.name", "<#FFAA00><b>Potenciador"))
+                    .setLore(MinionBoosts.messageList("empty.lore", listOf(
+                        "",
+                        " <gray>- <white>Admite: <accepts>",
+                        "",
+                        "<#FFAA00><b>[!]</b> Haz clic en uno de tu inventario para ponerlo"
+                    )), Placeholder.parsed("accepts", accepts))
+                    .get()
+            } else {
+                val copy = boost.clone()
+                val meta = copy.itemMeta
+                if (meta != null) {
+                    val expires = MinionBoosts.expiresAt(copy)
+                    val definition = MinionBoosts.definitionFor(this, copy)
+                    val time = when {
+                        definition == null -> MinionBoosts.message("time.invalid", "<red>No vale para este minion")
+                        definition.duration <= 0 -> MinionBoosts.message("time.permanent", "<#33FF33>Permanente")
+                        else -> MinionBoosts.message("time.left", "<#FFCC00><left>").replace("<left>", MinionBoosts.formatLeft((expires ?: 0L) - System.currentTimeMillis()))
+                    }
+                    val extra = MinionBoosts.messageList("filled.lore", listOf(
+                        "",
+                        " <gray>- <white>Duraci\u00f3n: <time>",
+                        "",
+                        "<#FF5555><b>[!]</b> Clic para quitarlo"
+                    )).map { StringUtils.formatToString(it, Placeholder.parsed("time", time)) }
+                    val lore = (meta.lore ?: mutableListOf()).toMutableList()
+                    lore.addAll(extra)
+                    meta.lore = lore
+                    copy.itemMeta = meta
+                }
+                copy
+            }
+            val shownMeta = shown.itemMeta
+            if (shownMeta != null) {
+                shownMeta.persistentDataContainer.set(Keys.GUI, PersistentDataType.STRING, "boost")
+                shown.itemMeta = shownMeta
+            }
+            inventory.setItem(extraSlot, shown)
+        }
+
+        // Ederus: filter button, only on the collector (gui.filter in collector.yml), from the unlock level
+        if (type.getName() == "collector" && MinionBoosts.unlocked(this)) {
             val filter = CollectorFilters.get(locationID)
             val count = filter?.materials?.size ?: 0
             val modeText = when {
@@ -456,7 +528,7 @@ class Minion(
                         " <gray>- <white>Modo: <mode>",
                         " <gray>- <white>Objetos en el filtro: <#FFAA00><amount>",
                         "",
-                        "<#FFAA00><b>[!]</b> Haz clic para elegir qué recoge"
+                        "<#FFAA00><b>[!]</b> Haz clic para elegir qu\u00e9 recoge"
                     ), *resolvers)
                     .get()
             }
@@ -465,7 +537,7 @@ class Minion(
                 buttonMeta.persistentDataContainer.set(Keys.GUI, PersistentDataType.STRING, "filter")
                 button.itemMeta = buttonMeta
             }
-            inventory.setItem(type.getConfig().get("gui.filter.slot", 14), button)
+            inventory.setItem(extraSlot, button)
         }
     }
 
@@ -671,6 +743,7 @@ class Minion(
         Minions.remove(this)
         entity.remove()
         CollectorFilters.remove(locationID)
+        MinionBoosts.set(locationID, null)
 
         AxMinionsPlugin.dataQueue.submit {
             AxMinionsPlugin.dataHandler.deleteMinion(this)
@@ -695,7 +768,9 @@ class Minion(
         }
 
         if (MobCoinStacking.absorb(linkedInventory!!, itemStack)) return
-        val remaining = linkedInventory?.addItem(itemStack)
+        // Ederus: boost with double-chance, only for plain items
+        val doubled = if (MinionBoosts.rollDouble(this, itemStack)) itemStack.clone() else null
+        val remaining = if (doubled != null) linkedInventory?.addItem(itemStack, doubled) else linkedInventory?.addItem(itemStack)
 
         remaining?.fastFor { _, u ->
             AxMinionsPlugin.integrations.getStackerIntegration().dropItemAt(u, u.amount, location)
@@ -779,7 +854,8 @@ class Minion(
     }
 
     override fun setNextAction(nextAction: Int) {
-        this.nextAction = nextAction
+        // Ederus: a boost with speed makes the minion wait less between actions
+        this.nextAction = (nextAction * MinionBoosts.speedFactor(this)).roundToInt().coerceAtLeast(1)
     }
 
     override fun markDirty() {

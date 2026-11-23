@@ -121,3 +121,16 @@ upgrades:
         type: LEATHER_BOOTS
         color: "100, 70, 30"
         glow: true
+
+# Ederus: slot of level 10 (see MinionBoosts). duration in seconds, 0 = permanent.
+boost:
+  level: 10
+  slot: 14
+  accepts: "<#FFAA00>Catalizador de Forja"
+  items:
+    CATALIZADOR_FORJA:
+      speed: 25
+      duration: 0
+    CATALIZADOR_FORJA_7D:
+      speed: 25
+      duration: 604800

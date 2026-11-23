@@ -88,6 +88,13 @@ class H2DataHandler : DataHandler {
             }
         }
 
+        // Ederus: boost item of level 10 minions (see MinionBoosts)
+        dataSource.connection.use { connection ->
+            connection.prepareStatement("CREATE TABLE IF NOT EXISTS `axminions_boosts`(`location_id` INT PRIMARY KEY, `item` CLOB);").use {
+                it.executeUpdate()
+            }
+        }
+
         if (Config.ISLAND_LIMIT() > 0) {
             dataSource.connection.use { connection ->
                 connection.prepareStatement("CREATE TABLE IF NOT EXISTS `axminions_island_counter`(`island` VARCHAR(256) PRIMARY KEY, `placed` INT);")
@@ -118,6 +125,40 @@ class H2DataHandler : DataHandler {
             connection.prepareStatement("MERGE INTO `axminions_collector_filters`(`location_id`, `data`) KEY(`location_id`) VALUES(?,?);").use {
                 it.setInt(1, locationId)
                 it.setString(2, data)
+                it.executeUpdate()
+            }
+        }
+    }
+
+    fun loadBoosts(): Map<Int, String> {
+        val result = hashMapOf<Int, String>()
+        dataSource.connection.use { connection ->
+            connection.prepareStatement("SELECT `location_id`, `item` FROM `axminions_boosts`;").use { statement ->
+                statement.executeQuery().use { resultSet ->
+                    while (resultSet.next()) {
+                        val data = resultSet.getString(2) ?: continue
+                        result[resultSet.getInt(1)] = data
+                    }
+                }
+            }
+        }
+        return result
+    }
+
+    fun saveBoost(locationId: Int, data: String) {
+        dataSource.connection.use { connection ->
+            connection.prepareStatement("MERGE INTO `axminions_boosts`(`location_id`, `item`) KEY(`location_id`) VALUES(?,?);").use {
+                it.setInt(1, locationId)
+                it.setString(2, data)
+                it.executeUpdate()
+            }
+        }
+    }
+
+    fun deleteBoost(locationId: Int) {
+        dataSource.connection.use { connection ->
+            connection.prepareStatement("DELETE FROM `axminions_boosts` WHERE `location_id` = ?;").use {
+                it.setInt(1, locationId)
                 it.executeUpdate()
             }
         }
