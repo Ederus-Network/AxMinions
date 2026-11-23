@@ -142,11 +142,11 @@ boost:
   items:
     CATALIZADOR_ABISAL:
       keys:
-      - "llave_epica:0.2:Llave Épica"
-      - "legendary:0.05:Llave Legendaria"
+      - "llave_epica:0.02:Llave Épica"
+      - "legendary:0.005:Llave Legendaria"
       duration: 0
     CATALIZADOR_ABISAL_7D:
       keys:
-      - "llave_epica:0.2:Llave Épica"
-      - "legendary:0.05:Llave Legendaria"
+      - "llave_epica:0.02:Llave Épica"
+      - "legendary:0.005:Llave Legendaria"
       duration: 604800
