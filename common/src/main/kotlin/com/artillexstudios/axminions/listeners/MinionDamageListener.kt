@@ -1,24 +1,23 @@
 package com.artillexstudios.axminions.listeners
 
-import com.artillexstudios.axapi.scheduler.Scheduler
 import com.artillexstudios.axminions.AxMinionsPlugin
-import com.artillexstudios.axminions.api.AxMinionsAPI
 import com.artillexstudios.axminions.api.events.MinionKillEntityEvent
-import com.artillexstudios.axminions.api.utils.fastFor
 import com.artillexstudios.axminions.api.warnings.Warnings
 import com.artillexstudios.axminions.nms.NMSHandler
 import dev.rosewood.rosestacker.api.RoseStackerAPI
 import com.artillexstudios.axminions.integrations.stacker.RoseStackerIntegration
+import com.artillexstudios.axminions.minions.miniontype.SlayerContext
 import org.bukkit.Bukkit
 import java.util.concurrent.ThreadLocalRandom
 import java.util.Random
-import org.bukkit.entity.Item
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.event.entity.EntityDeathEvent
+import org.bukkit.inventory.ItemStack
 
 class MinionDamageListener : Listener {
     private val random = Random()
@@ -46,27 +45,45 @@ class MinionDamageListener : Listener {
                 event.minion.getType().getLong("storage", event.minion.getLevel()).toDouble()
         )
         event.minion.setStorage(coerced)
+    }
 
-        Scheduler.get().runLaterAt(event.target.location, { task ->
-            event.target.location.world!!.getNearbyEntities(event.target.location, 4.0, 4.0, 4.0)
-                .filterIsInstance<Item>().fastFor { item ->
-                if (event.minion.getLinkedInventory()?.firstEmpty() == -1) {
-                    Warnings.CONTAINER_FULL.display(event.minion)
-                    return@runLaterAt
-                }
+    /**
+     * Ederus: a killer minion keeps only the loot of its own kills, never what lies around (other kills, the
+     * player's mob coins): that is the collector's job. Kills happen inside the minion's hit, while
+     * SlayerContext names it; group members that StainStacker publishes inside that hit count too.
+     * Runs after SmartSpawner (HIGHEST) and UltimateMobCoins, so it sees the final drops; what does not fit
+     * in the minion's container stays in the drops and falls as usual.
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onMinionKillDrops(event: EntityDeathEvent) {
+        val minion = SlayerContext.current ?: return
+        if (event.entity is Player || event.drops.isEmpty()) return
+        if (!killedByMinion(event)) return
+        if (minion.getLinkedInventory() == null) return
 
-                val amount = AxMinionsPlugin.integrations.getStackerIntegration().getStackSize(item)
-                val stack = item.itemStack
-                stack.amount = amount.toInt()
-
-                val map = event.minion.addWithRemaining(stack) ?: return@fastFor
-                if (map.isEmpty() || stack.amount <= 0) {
-                    item.remove()
-                } else {
-                    AxMinionsAPI.INSTANCE.getIntegrations().getStackerIntegration().setStackSize(item, stack.amount)
-                }
+        val kept = ArrayList<ItemStack>()
+        for (drop in event.drops) {
+            if (drop == null || drop.type.isAir || drop.amount <= 0) continue
+            val left = minion.addWithRemaining(drop.clone())
+            if (left == null) {
+                kept.add(drop)
+                continue
             }
-        }, 2)
+            left.values.forEach { if (!it.type.isAir && it.amount > 0) kept.add(it) }
+        }
+
+        if (kept.isNotEmpty()) {
+            Warnings.CONTAINER_FULL.display(minion)
+        }
+        event.drops.clear()
+        event.drops.addAll(kept)
+    }
+
+    private fun killedByMinion(event: EntityDeathEvent): Boolean {
+        // The minion hits with a fox that never enters the world: the killing hit names it as damager,
+        // and StainStacker gives that same hit to the group members it publishes.
+        val hit = event.entity.lastDamageCause as? EntityDamageByEntityEvent ?: return false
+        return hit.damager.uniqueId == NMSHandler.get().getAnimalUUID()
     }
 
     @EventHandler
