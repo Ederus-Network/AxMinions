@@ -48,6 +48,11 @@ class Messages(file: File, stream: InputStream) {
         fun PLACE_MISSING_PERMISSION() = AxMinionsAPI.INSTANCE.getMessages().get<String>("place.missing-permission")
         @JvmStatic
         fun ISLAND_LIMIT_REACHED() = AxMinionsAPI.INSTANCE.getMessages().get<String>("place.island-limit-reached")
+        // Optional keys: if they are missing in messages.yml, these same texts are used
+        @JvmStatic
+        fun COLLECT_SUCCESS() = AxMinionsAPI.INSTANCE.getMessages().get("collect.success", "<#33FF33>Recolectaste <#FFCC00>$<amount> <#33FF33>de tu minion vendedor.")
+        @JvmStatic
+        fun COLLECT_EMPTY() = AxMinionsAPI.INSTANCE.getMessages().get("collect.empty", "<#FF3333>No hay dinero para recolectar.")
         @JvmStatic
         fun STATISTICS() = AxMinionsAPI.INSTANCE.getMessages().get<String>("statistics")
         @JvmStatic

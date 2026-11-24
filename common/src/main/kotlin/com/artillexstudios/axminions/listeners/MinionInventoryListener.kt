@@ -13,7 +13,9 @@ import com.artillexstudios.axminions.api.minions.miniontype.MinionTypes
 import com.artillexstudios.axminions.api.utils.CoolDown
 import com.artillexstudios.axminions.api.utils.Keys
 import com.artillexstudios.axminions.api.utils.fastFor
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
+import java.text.NumberFormat
 import java.util.Locale
 import net.md_5.bungee.api.ChatMessageType
 import net.md_5.bungee.api.chat.TextComponent
@@ -30,6 +32,11 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 
 class MinionInventoryListener : Listener {
+    companion object {
+        // Same short format as <storage> in the minion menu (815K, 1.2M...)
+        private val MONEY_FORMAT = NumberFormat.getCompactNumberInstance(Locale.ENGLISH, NumberFormat.Style.SHORT)
+    }
+
     private val coolDown = CoolDown<Player>()
 
     @EventHandler
@@ -231,16 +238,26 @@ class MinionInventoryListener : Listener {
 
             "statistics" -> {
                 val stored = minion.getStorage()
+                val isSeller = minion.getType() == MinionTypes.getMinionTypes()["seller"]
 
                 if (stored == 0.0) {
+                    if (isSeller) {
+                        player.sendMessage(StringUtils.formatToString(Messages.PREFIX() + Messages.COLLECT_EMPTY()))
+                    }
                     return
                 }
 
-                if (minion.getType() == MinionTypes.getMinionTypes()["seller"]) {
+                if (isSeller) {
                     AxMinionsPlugin.integrations.getEconomyIntegration()?.let {
-                        minion.getOwner()?.let { player ->
-                            it.giveBalance(player, stored)
+                        minion.getOwner()?.let { owner ->
+                            it.giveBalance(owner, stored)
                             minion.setStorage(0.0)
+                            player.sendMessage(
+                                StringUtils.formatToString(
+                                    Messages.PREFIX() + Messages.COLLECT_SUCCESS(),
+                                    Placeholder.unparsed("amount", MONEY_FORMAT.format(stored))
+                                )
+                            )
                         }
                     }
                 } else {

@@ -79,6 +79,13 @@ not-on-island: "<#FF0000>You are currently not on an island!"
 slot-give: "<green>You have given <player> <amount> island minion slots!"
 slot-receive: "<green>You were given <amount> new island minion slots! (<from> -> <to>)"
 
+# Clicking "Statistics" on a seller minion to collect its stored money
+# These keys are optional: if they are missing, the plugin uses these same texts.
+# <amount> uses the same short format as the menu (815K, 1.2M...)
+collect:
+  success: "<#33FF33>Recolectaste <#FFCC00>$<amount> <#33FF33>de tu minion vendedor."
+  empty: "<#FF3333>No hay dinero para recolectar."
+
 location-format: "<world>;<x>;<y>;<z>"
 
 # /minions list: the player's minions; clicking one opens its own menu
