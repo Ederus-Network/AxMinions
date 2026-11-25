@@ -1,21 +1,36 @@
 package com.artillexstudios.axminions.minions.miniontype
 
 import com.artillexstudios.axminions.AxMinionsPlugin
-import com.artillexstudios.axminions.api.AxMinionsAPI
+import com.artillexstudios.axminions.api.integrations.types.StackerIntegration
 import com.artillexstudios.axminions.api.minions.Minion
 import com.artillexstudios.axminions.api.minions.miniontype.MinionType
 import com.artillexstudios.axminions.api.utils.fastFor
 import com.artillexstudios.axminions.api.warnings.Warnings
+import com.artillexstudios.axminions.integrations.stacker.DefaultStackerIntegration
+import com.artillexstudios.axminions.integrations.stacker.RoseStackerIntegration
 import com.artillexstudios.axminions.minions.CollectorFilters
 import com.artillexstudios.axminions.minions.MinionBoosts
 import com.artillexstudios.axminions.minions.MinionTicker
 import com.artillexstudios.axminions.utils.Enchantments
 import kotlin.math.roundToInt
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Item
 import org.bukkit.inventory.DoubleChestInventory
 
 class CollectorMinionType : MinionType("collector", AxMinionsPlugin.INSTANCE.getResource("minions/collector.yml")!!) {
+
+    // Ederus: StainStacker (RoseStacker) junta los objetos del suelo en montones de hasta 512 aunque el hook
+    // de la config este en none (lo dejamos asi para que el cazador no cuente los mobs apilados). Sin leer el
+    // monton, el recolector guardaba 64 y borraba el resto.
+    private var roseItems: RoseStackerIntegration? = null
+
+    private fun itemStacker(): StackerIntegration {
+        val current = AxMinionsPlugin.integrations.getStackerIntegration()
+        if (current !is DefaultStackerIntegration) return current
+        if (Bukkit.getPluginManager().getPlugin("RoseStacker") == null) return current
+        return roseItems ?: RoseStackerIntegration().also { it.register(); roseItems = it }
+    }
 
     override fun shouldRun(minion: Minion): Boolean {
         return MinionTicker.getTick() % minion.getNextAction() == 0L
@@ -76,6 +91,7 @@ class CollectorMinionType : MinionType("collector", AxMinionsPlugin.INSTANCE.get
             minion.getRange()
         )
 
+        val stacker = itemStacker()
         entities?.filterIsInstance<Item>()?.fastFor { item ->
             // Ederus: collector filter
             if (MinionBoosts.unlocked(minion) && !CollectorFilters.allows(minion.getLocationId(), item.itemStack.type)) return@fastFor
@@ -85,7 +101,7 @@ class CollectorMinionType : MinionType("collector", AxMinionsPlugin.INSTANCE.get
                 return
             }
 
-            val amount = AxMinionsPlugin.integrations.getStackerIntegration().getStackSize(item)
+            val amount = stacker.getStackSize(item)
             val stack = item.itemStack.clone()
             stack.amount = amount.toInt()
 
@@ -94,7 +110,7 @@ class CollectorMinionType : MinionType("collector", AxMinionsPlugin.INSTANCE.get
             if (map.isEmpty() || stack.amount <= 0) {
                 item.remove()
             } else {
-                AxMinionsAPI.INSTANCE.getIntegrations().getStackerIntegration().setStackSize(item, stack.amount)
+                stacker.setStackSize(item, stack.amount)
             }
 
             minion.setActions(minion.getActionAmount() + amount)
