@@ -16,7 +16,7 @@ delete-unsellable: true
 # Nunca se vende asi un objeto con nombre, lore, modelo o datos de otro plugin.
 # from-level: 0 lo apaga.
 sell-damaged:
-  from-level: 10
+  from-level: 1
   materials:
     - "BOW"
     - "CROSSBOW"

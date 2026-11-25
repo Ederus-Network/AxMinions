@@ -38,7 +38,7 @@ class SellerMinionType : MinionType("seller", AxMinionsPlugin.INSTANCE.getResour
             "COPPER_HELMET", "COPPER_CHESTPLATE", "COPPER_LEGGINGS", "COPPER_BOOTS",
             "GOLDEN_SWORD", "STONE_SWORD", "IRON_SWORD", "IRON_SHOVEL", "IRON_AXE", "GOLDEN_AXE"
         )
-        private const val DEFAULT_DAMAGED_FROM_LEVEL = 10
+        private const val DEFAULT_DAMAGED_FROM_LEVEL = 1
         private val DEFAULT_LIMITS = mapOf("BLAZE_ROD" to 10000)
 
         private fun limitsFile(): File {
