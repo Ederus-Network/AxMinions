@@ -91,11 +91,30 @@ object MinionBoosts {
         val multiplierKey = wandKey(data, "sellwand_multiplier")
         val multiplier = multiplierKey?.let { data.get(it, PersistentDataType.DOUBLE) }
         if (multiplier != null) {
+            // EDM 1.118.14+: each wand type says if it fits in a minion (sellwand_minion 1/0). Old wands do not say.
+            if (wandForMinion(data) == false) return null
             val uses = wandKey(data, "sellwand_uses")?.let { data.get(it, PersistentDataType.INTEGER) } ?: 0
             val label = if (multiplier == Math.floor(multiplier)) multiplier.toInt().toString() else multiplier.toString().replace('.', '_')
             return "SELLWAND_X" + label + if (uses == -1) "_INFINITA" else ""
         }
         return mmoItemsId(item)
+    }
+
+    /** sellwand_minion of an EDM wand: true or false, or null when the wand is older and does not carry it. */
+    private fun wandForMinion(data: org.bukkit.persistence.PersistentDataContainer): Boolean? {
+        val key = wandKey(data, "sellwand_minion") ?: return null
+        val value = data.get(key, PersistentDataType.BYTE)?.toInt()
+            ?: data.get(key, PersistentDataType.INTEGER)
+            ?: return null
+        return value != 0
+    }
+
+    /** The multiplier an EDM wand marked for minions carries, or null for anything else. */
+    private fun minionWandMultiplier(item: ItemStack): Double? {
+        val data = item.itemMeta?.persistentDataContainer ?: return null
+        if (wandForMinion(data) != true) return null
+        val multiplier = wandKey(data, "sellwand_multiplier")?.let { data.get(it, PersistentDataType.DOUBLE) } ?: return null
+        return if (multiplier > 0) multiplier else null
     }
 
     private fun mmoItemsId(item: ItemStack): String? {
@@ -114,7 +133,13 @@ object MinionBoosts {
         val id = idOf(item) ?: return null
         val config = minion.getType().getConfig()
         val route = "boost.items.$id"
-        if (config.getSection(route) == null) return null
+        if (config.getSection(route) == null) {
+            // A wand type made in EDM with minion: true works in the seller with no entry here:
+            // permanent, with the multiplier the wand carries.
+            if (minion.getType().getName() != "seller") return null
+            val multiplier = minionWandMultiplier(item!!) ?: return null
+            return Definition(id, 0L, 0.0, 0.0, multiplier, emptyList())
+        }
         val keys = config.get("$route.keys", listOf<String>()).mapNotNull { line ->
             val parts = line.split(':', limit = 3)
             if (parts.size < 2) return@mapNotNull null
