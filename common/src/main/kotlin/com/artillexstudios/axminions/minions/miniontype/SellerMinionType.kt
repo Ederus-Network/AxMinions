@@ -167,6 +167,7 @@ class SellerMinionType : MinionType("seller", AxMinionsPlugin.INSTANCE.getResour
             }
 
             val itemMeta = it.itemMeta
+            var keepsItems = false
             if (itemMeta is org.bukkit.inventory.meta.BlockStateMeta) {
                 val blockState = itemMeta.blockState
                 if (blockState is Container) {
@@ -175,13 +176,20 @@ class SellerMinionType : MinionType("seller", AxMinionsPlugin.INSTANCE.getResour
                         val success = sellItemStack(minion, stack)
                         if (!success) {
                             stacks[counter] = stack
+                            keepsItems = true
                         }
                     }
                     blockState.inventory.contents = stacks
                     itemMeta.blockState = blockState
+                    it.itemMeta = itemMeta
                 }
             }
-            it.itemMeta = itemMeta
+
+            // Ederus: a shulker that still holds what could not be sold (daily limit, full storage) is never
+            // sold or deleted itself: delete-unsellable used to throw it away with everything inside.
+            if (keepsItems) {
+                continue
+            }
 
             val success = sellItemStack(minion, it)
             if (success) {
